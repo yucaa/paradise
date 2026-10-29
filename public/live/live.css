@@ -39,7 +39,7 @@
 .mind-left .tag { font-size: 10.5px; line-height: 1.6; color: rgba(226, 230, 236, 0.55); margin-bottom: 18px;
   border-left: 1px solid rgba(255, 255, 255, 0.18); padding-left: 10px; }
 .mind-left .tag .sp { font-style: italic; color: rgba(236, 232, 222, 0.85); }
-.mono-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: lowercase;
+.mono-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
   color: rgba(255, 255, 255, 0.4); margin-bottom: 8px; }
 .mind-right .mono-label:not(:first-child) { margin-top: 18px; }
 #raster { flex: 1; width: 100%; min-height: 0; }

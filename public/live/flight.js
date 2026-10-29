@@ -27,7 +27,7 @@ function wingGeometry(side) {
 }
 
 const body = new THREE.MeshStandardMaterial({ color: 0x0a0a0c, roughness: 0.25, metalness: 0.1 });
-const wing = new THREE.MeshStandardMaterial({ color: 0xfffaf0, emissive: 0xfff6e8, emissiveIntensity: 0.55,
+const wing = new THREE.MeshStandardMaterial({ color: 0xfffaf0, emissive: 0xfff6e8, emissiveIntensity: 0.2,
   transparent: true, opacity: 0.72, side: THREE.DoubleSide, roughness: 0.1, depthWrite: false });
 const silhouette = new THREE.MeshBasicMaterial({ color: 0x080808, side: THREE.DoubleSide });
 

@@ -169,12 +169,15 @@ export class Traces {
       ctx.fillStyle = "rgba(255,255,255,0.06)";
       ctx.fillRect(gutter, mid, w - gutter, Math.max(1, dpr * 0.5));
       if (H.length < 2) return;
+      let lo = Infinity, hi = -Infinity;
+      for (const v of H) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+      const span = Math.max(hi - lo, 0.05);
       ctx.strokeStyle = "rgba(226,230,236,0.85)";
       ctx.lineWidth = dpr;
       ctx.beginPath();
       H.forEach((v, i) => {
         const x = w - (H.length - 1 - i) * 2 * dpr;
-        const y = mid - (v - 0.3) * rowH * 1.1;
+        const y = mid - ((v - lo) / span - 0.5) * rowH * 0.8;
         i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
       });
       ctx.stroke();

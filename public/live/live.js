@@ -16,8 +16,14 @@ import { Wind } from "./wind.js";
 import { Raster, Traces, drawArch } from "./mind.js";
 import { Director } from "./camera.js";
 
-// The brain server (python -m paradise.live serve); ?brain=wss://... points elsewhere.
-const BRAIN_URL = new URLSearchParams(location.search).get("brain") || "ws://127.0.0.1:8766";
+// The brain server (python -m paradise.live serve). Where it is: ?brain=wss://...,
+// else the public address in brain.json (written when it is served through a
+// tunnel, see paradise/tunnel.py), else this machine. On failure, try the next.
+const LOCAL_BRAIN = "ws://127.0.0.1:8766";
+const published = await fetch("brain.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+const BRAINS = [new URLSearchParams(location.search).get("brain"), published.url, LOCAL_BRAIN].filter(Boolean);
+const BRAIN_URL = BRAINS[0];
+let brainTry = 0;
 const $ = (id) => document.getElementById(id);
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
 const params = new URLSearchParams(location.search);
@@ -146,15 +152,19 @@ function updateCamera(dt, t) {
     camera.lookAt(b2t(new THREE.Vector3(ax, ay, az)));
   }
 }
-let heroGust = 0;
 
 // ---------------------------------------------------------------- brain link
-let ws, awaiting = false, meta = null, lastSent = 0, replies = [], glow = 2;
+let ws, awaiting = false, meta = null, lastSent = 0, glow = 2;
 function connect() {
-  ws = new WebSocket(BRAIN_URL);
+  const url = BRAINS[brainTry % BRAINS.length];
+  let opened = false;
+  ws = new WebSocket(url);
   ws.binaryType = "arraybuffer";
-  ws.onopen = () => { $("live").classList.add("on"); $("state").textContent = "live"; awaiting = false; };
-  ws.onclose = () => { $("live").classList.remove("on"); $("state").textContent = "brain offline"; setTimeout(connect, 1500); };
+  ws.onopen = () => { opened = true; awaiting = false; };
+  ws.onclose = () => {
+    if (!opened) brainTry++;          // unreachable: try the next address
+    setTimeout(connect, 1500);
+  };
   ws.onmessage = (e) => {
     if (typeof e.data === "string") { meta = JSON.parse(e.data); return; }
     const z = new Int8Array(e.data, 0, N);
@@ -165,8 +175,6 @@ function connect() {
     constellation.setRegionLevels(latestLevels);
     latestZ = z;
     flight.sense(meta.valence);
-    replies.push(performance.now());
-    $("rate").textContent = `${replies.length} Hz · brain ${meta.ms.toFixed(0)} ms`;
     awaiting = false;
   };
 }
@@ -229,11 +237,8 @@ function tick(now) {
   const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
   last = now;
   const t = (now - t0) / 1000;
-  while (replies.length && now - replies[0] > 1000) replies.shift();
   wind.update(dt, t, flight.pos);
   flight.update(dt, t, wind);
-  heroGust = wind.at(flight.pos.x, flight.pos.y).length();
-  $("breeze").textContent = `${wind.level} · ${heroGust.toFixed(1)} · ${wind.puffs.length} gusts`;
   // Trail
   const arr = trailGeo.attributes.position.array;
   flight.trail.forEach((p, i) => arr.set([p.x, p.y, p.z], i * 3));
@@ -258,8 +263,6 @@ function tick(now) {
   composer.render();
   constellation.render(t, dt);
   // The animal mind, as instruments.
-  const hz = replies.length, ms = meta ? meta.ms.toFixed(0) : "—";
-  $("tagLive").textContent = `simulated live · ${hz} Hz · ${ms} ms per view`;
   if (meta) {
     const sgn = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
     const act = meta.valence >= 0 ? "approach" : "withdraw";

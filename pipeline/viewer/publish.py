@@ -25,7 +25,12 @@ def copy(src: Path, dst: Path):
 
 def main(site: Path):
     public = site / "public"
+    brain = public / "live" / "brain.json"           # the brain's public address (paradise/tunnel.py)
+    keep = brain.read_bytes() if brain.exists() else None
     shutil.rmtree(public / "live", ignore_errors=True)
+    if keep:
+        brain.parent.mkdir(parents=True, exist_ok=True)
+        brain.write_bytes(keep)
     for f in LIVE.iterdir():
         if f.is_file():
             copy(f, public / "live" / f.name)

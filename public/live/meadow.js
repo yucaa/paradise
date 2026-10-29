@@ -205,7 +205,9 @@ function heavenMaterial(kind, uniforms) {
           col += lightCol * 0.6 * (1.0 - exp(-act * act * twig * drift * uGlow));
         #endif
         #if KIND == 5
-          col += vec3(1.0, 0.92, 0.75) * 0.5;
+          col += vec3(1.0, 0.92, 0.75) * 0.3;
+          float nearCam = length(vPos - uCam);
+          if (hash(vec3(gl_FragCoord.xy, 1.0)) > smoothstep(0.5, 3.0, nearCam)) discard;
         #endif
         // Ground mist: denser near the ground.
         float d = length(vPos - uCam);
@@ -348,7 +350,7 @@ function waterMaterial(uniforms) {
         col += vec3(1.0, 0.97, 0.9) * edge * 0.06;
         // The sun's glitter path, broken up by the ripples.
         vec3 R = reflect(-V, n);
-        col += vec3(1.0, 0.9, 0.72) * pow(max(dot(R, uSun), 0.0), 600.0) * 2.0 * calm;
+        col += vec3(1.0, 0.9, 0.72) * pow(max(dot(R, uSun), 0.0), 600.0) * 0.7 * calm;
         float d = length(vPos - uCam);
         float zAvg = 0.5 * (vPos.z + uCam.z);
         float fog = 1.0 - exp(-d * (0.002 + 0.009 * exp(-0.28 * max(zAvg, 0.0))));

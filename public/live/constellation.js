@@ -102,7 +102,7 @@ export class Constellation {
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
           gl_Position = projectionMatrix * mv;
           float size = mix(1.0 + 1.8 * vA + 3.2 * vSpike * sqrt(vA) + (judge != 0.0 ? 1.4 : 0.0),
-                           1.3 + 2.2 * vLevel, uMode);
+                           1.2 + 1.3 * vLevel, uMode);
           gl_PointSize = uPR * size * (5.5 / -mv.z);
         }`,
       fragmentShader: /* glsl */ `
@@ -121,7 +121,9 @@ export class Constellation {
           float a = core * (0.12 + 0.4 * vA + vSpike * sqrt(vA) + 0.25 * vNeg);
           // Regions: each neuron wears its region's hue, lit by the region's activity.
           vec3 rc = mix(vRegion * 0.55, mix(vRegion, vec3(1.0), 0.25 * vLevel), vLevel);
-          float ra = core * (0.3 + 0.6 * vLevel * vLevel);
+          // Points add up, and the optic lobes are dense: keep each faint so
+          // a busy region glows in its colour instead of saturating to white.
+          float ra = core * (0.07 + 0.2 * vLevel * vLevel);
           c = mix(c, rc, uMode);
           a = mix(a, ra, uMode);
           gl_FragColor = vec4(c * a, a);

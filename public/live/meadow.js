@@ -119,6 +119,9 @@ function heavenMaterial(kind, uniforms) {
           // A soft, ragged dab, dithered at its edge (painterly, no sorting).
           float rr = length((vCard - 0.5) * 2.0) + (vnoise(vec3(vCard * 5.0, vRoot.x * 3.1)) - 0.5) * 0.55;
           float alpha = 1.0 - smoothstep(0.45, 1.0, rr);
+          // Dissolve near the lens, so a camera among the leaves sees through
+          // them rather than into a backlit card filling the frame.
+          if (uFlyView < 0.5) alpha *= smoothstep(1.5, 4.0, length(vPos - uCam));
           if (alpha < hash(vec3(gl_FragCoord.xy, 0.0))) discard;
         #endif
         if (uFlyView > 0.5) {
@@ -141,8 +144,9 @@ function heavenMaterial(kind, uniforms) {
         vec3 V = normalize(uCam - vPos);
         vec3 sunCol = vec3(1.0, 0.86, 0.66) * 1.3;
         #if KIND == 6 || KIND == 7
-          // Faceted: flat normals from screen derivatives.
-          n = normalize(cross(dFdx(vPos), dFdy(vPos)));
+          // Faceted; a sub-pixel facet has no derivative, so keep the mesh normal.
+          vec3 fn = cross(dFdx(vPos), dFdy(vPos));
+          if (dot(fn, fn) > 1e-24) n = normalize(fn);
           if (dot(n, V) < 0.0) n = -n;
         #endif
         #if KIND == 6
@@ -258,6 +262,10 @@ function skyMaterial(uniforms) {
         if (uFlyView > 0.5) { gl_FragColor = vec4(raw, 1.0); return; }
         vec3 c = grade(raw);
         c = 1.0 - (1.0 - c) * (1.0 - 0.35 * vec3(1.0, 0.93, 0.82));
+        // Below the horizon, beyond the meadow's edge (seen only from up high):
+        // the haze the distant ground fades into, not the lower half of heaven,
+        // which is never seen from the meadow and blazes white.
+        c = mix(c, vec3(1.0, 0.93, 0.84), smoothstep(0.03, -0.06, normalize(dir).z));
         gl_FragColor = vec4(c * 1.05, 1.0);
       }`,
   });
@@ -299,7 +307,11 @@ function waterMaterial(uniforms) {
         vec2 hf = hc - floor(hc);
         float bedZ = mix(mix(texelFetch(uHeight, hi, 0).r, texelFetch(uHeight, hi + ivec2(1, 0), 0).r, hf.x),
                          mix(texelFetch(uHeight, hi + ivec2(0, 1), 0).r, texelFetch(uHeight, hi + ivec2(1, 1), 0).r, hf.x), hf.y);
-        float depth = ${WATER_LEVEL.toFixed(2)} - bedZ;
+        // Never negative: past the edge of the ground mesh (seen from up high)
+        // the plane lies over higher ground, and a negative depth would make
+        // the absorption below blow up to infinity, which the bloom spreads
+        // across the whole frame.
+        float depth = max(${WATER_LEVEL.toFixed(2)} - bedZ, 0.0);
         // A still pond. Long, slow undulations keep it alive; the breeze adds
         // finer ripples only where gusts touch down (cat's paws), and these
         // scatter the reflection rather than carving the surface.

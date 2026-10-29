@@ -202,11 +202,7 @@ function sendView(now) {
 // ---------------------------------------------------------------- controls
 function setMode(m) {
   flight.guide(m === "guide");
-  $("seek").classList.toggle("on", m === "seek");
-  $("guide").classList.toggle("on", m === "guide");
 }
-$("seek").onclick = () => setMode("seek");
-$("guide").onclick = () => setMode("guide");
 addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
   if (k === "g") setMode(flight.mode === "guide" ? "seek" : "guide");

@@ -1,0 +1,51 @@
+#view { position: absolute; inset: 0; }
+#view canvas { display: block; width: 100%; height: 100%; }
+#vignette { z-index: 0; }
+
+.status { left: var(--gutter); right: var(--gutter); bottom: 18px; height: 28px; display: flex; align-items: center;
+  gap: 18px; font-size: 12px; color: rgba(255, 255, 255, 0.72); font-variant-numeric: tabular-nums; }
+.status .spacer { flex: 1; }
+.status .live { display: flex; align-items: center; gap: 8px; }
+.status .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); }
+.status .live.on i { background: #4cc38a; box-shadow: 0 0 10px #4cc38a; animation: breathe 2.4s ease-in-out infinite; }
+.status .live b { font-weight: 500; color: var(--text); }
+#day { font-family: var(--serif); }
+.status button { padding: 5px 12px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--panel);
+  color: var(--muted); font-size: 12px; }
+.status button.on { color: var(--text); border-color: rgba(233, 196, 106, 0.45); }
+.status .keys { color: rgba(255, 255, 255, 0.45); font-size: 11px; }
+@keyframes breathe { 50% { opacity: 0.45; } }
+
+#loading { position: absolute; inset: 0; display: grid; place-items: center; background: var(--bg);
+  font-family: var(--serif); font-size: 22px; color: var(--muted); transition: opacity 1.2s ease; z-index: 10; }
+#loading.gone { opacity: 0; pointer-events: none; }
+.status .breeze { color: rgba(255, 255, 255, 0.55); }
+.status .breeze b { font-weight: 400; color: rgba(255, 255, 255, 0.8); }
+
+.region-label { position: absolute; left: 0; top: 0; pointer-events: none; display: flex; align-items: center; gap: 5px;
+  font-size: 10.5px; color: rgba(237, 237, 239, 0.88); white-space: nowrap; opacity: 0;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); margin: -7px 0 0 6px; }
+.region-label i { width: 5px; height: 5px; border-radius: 50%; }
+.region-label b { display: block; width: 34px; height: 2px; background: rgba(255, 255, 255, 0.12); }
+.region-label u { display: block; height: 100%; text-decoration: none; }
+
+/* --- heaven through an arched window; the fly's mind in the margins ----------- */
+:root { --mono: "IBM Plex Mono", Consolas, monospace; --mw: 25vw; }
+#arch { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.mind { position: absolute; width: calc(var(--mw) - 56px); font-family: var(--mono); color: rgba(226, 230, 236, 0.75);
+  display: flex; flex-direction: column; }
+.mind-left { left: 28px; top: 96px; bottom: 64px; }
+.mind-right { right: 28px; top: 28px; bottom: 64px; }
+.mind-left .tag { font-size: 10.5px; line-height: 1.6; color: rgba(226, 230, 236, 0.55); margin-bottom: 18px;
+  border-left: 1px solid rgba(255, 255, 255, 0.18); padding-left: 10px; }
+.mind-left .tag .sp { font-style: italic; color: rgba(236, 232, 222, 0.85); }
+.mono-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.4); margin-bottom: 8px; }
+.mind-right .mono-label:not(:first-child) { margin-top: 18px; }
+#raster { flex: 1; width: 100%; min-height: 0; }
+.mind-right .viz { height: 34vh; position: relative; cursor: grab; }
+.mind-right .viz canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
+#traces { flex: 1; width: 100%; min-height: 0; }
+.readout { font-size: 11px; line-height: 1.7; color: rgba(226, 230, 236, 0.7); white-space: pre; }
+.readout b { font-weight: 400; font-size: 22px; color: #eef0f3; letter-spacing: -0.02em; }
+.title { left: 28px; top: 28px; }

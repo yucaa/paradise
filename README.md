@@ -1,36 +1,25 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Paradise
 
-## Getting Started
+A fruit fly's heaven, extracted from its connectome. The visual world that
+most pleases one *Drosophila* brain (FlyWire 783, simulated) paints a meadow;
+a fly lives in it, and its brain is shown in the margins as it looks around.
 
-First, run the development server:
+- `public/live/`: the piece, a static three.js page (the site's `/` redirects here).
+- `pipeline/`: the Python and Blender source that simulates the brain, extracts
+  heaven and builds the meadow.
+
+## The brain
+
+The page's brain readout comes from a GPU server you run yourself:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd pipeline
+uv run python -m paradise.live serve      # ws://127.0.0.1:8766
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The page connects to it at `ws://127.0.0.1:8766`, or to `?brain=wss://...`.
+Without it the meadow and the fly still run, and the brain panels show offline.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Updating
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+From the working repo: `python viewer/publish.py <path to this checkout>`, then commit and push.

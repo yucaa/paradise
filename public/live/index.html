@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paradise — live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="live.css">
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+</head>
+<body>
+<main id="stage">
+  <div id="view"></div>
+  <div id="vignette"></div>
+  <svg id="arch"></svg>
+
+  <header class="title hud">
+    <div class="name">Paradise</div>
+  </header>
+
+  <aside class="mind mind-left hud">
+    <div class="tag">
+      <div class="sp">Drosophila melanogaster</div>
+      <div>FlyWire 783 · adult female brain</div>
+      <div>139,255 neurons · 15,091,983 synapses</div>
+      <div id="tagLive">simulated · —</div>
+    </div>
+    <div class="mono-label">pleasure &amp; aversion neurons · spikes</div>
+    <canvas id="raster"></canvas>
+  </aside>
+
+  <aside class="mind mind-right hud">
+    <div class="mono-label">brain regions · lit by live activity</div>
+    <div class="viz" id="cons"></div>
+    <div class="mono-label">region activity · over time</div>
+    <canvas id="traces"></canvas>
+    <div class="mono-label">verdict</div>
+    <div class="readout" id="readout">—</div>
+  </aside>
+
+  <footer class="status hud">
+    <span class="live" id="live"><i></i><b id="state">connecting</b></span>
+    <span id="rate">—</span>
+    <span id="day">Day I</span>
+    <span class="breeze">wind <b id="breeze">—</b></span>
+    <span class="spacer"></span>
+    <button id="seek" class="on">Seek</button>
+    <button id="guide">Guide</button>
+    <span class="keys">g guide · r release · b breeze · h hide · drag to look · scroll to zoom</span>
+  </footer>
+  <div id="loading">Planting the garden…</div>
+</main>
+<script type="module" src="live.js"></script>
+</body>
+</html>

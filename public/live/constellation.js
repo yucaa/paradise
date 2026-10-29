@@ -37,7 +37,7 @@ export class Constellation {
     el.appendChild(this.renderer.domElement);
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(30, 1, 0.1, 20);
-    this.dist = 2.6;
+    this.dist = 3.25;
     this.yaw = 0.4; this.pitch = 0.12;
 
     // Activity texture: smoothed σ per neuron.
@@ -123,7 +123,7 @@ export class Constellation {
           vec3 rc = mix(vRegion * 0.55, mix(vRegion, vec3(1.0), 0.25 * vLevel), vLevel);
           // Points add up, and the optic lobes are dense: keep each faint so
           // a busy region glows in its colour instead of saturating to white.
-          float ra = core * (0.07 + 0.2 * vLevel * vLevel);
+          float ra = core * (0.1 + 0.28 * vLevel * vLevel);
           c = mix(c, rc, uMode);
           a = mix(a, ra, uMode);
           gl_FragColor = vec4(c * a, a);

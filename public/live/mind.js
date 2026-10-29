@@ -159,11 +159,12 @@ export class Traces {
     }
     const ctx = this.ctx;
     ctx.clearRect(0, 0, w, h);
-    const rowH = h / TRACE_ORDER.length;
+    const pad = 10 * dpr;
+    const rowH = (h - pad) / TRACE_ORDER.length;
     ctx.font = `${9.5 * dpr}px "IBM Plex Mono", Consolas, monospace`;
     ctx.textBaseline = "middle";
     TRACE_ORDER.forEach(([, label], k) => {
-      const H = this.hist[k], y0 = k * rowH, mid = y0 + rowH * 0.62;
+      const H = this.hist[k], y0 = pad + k * rowH, mid = y0 + rowH * 0.55;
       ctx.fillStyle = "rgba(255,255,255,0.45)";
       ctx.fillText(label, 0, mid);
       ctx.fillStyle = "rgba(255,255,255,0.06)";

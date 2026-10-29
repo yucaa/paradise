@@ -1,6 +1,6 @@
 // Paradise, live. The meadow renders in real time; several times a second the
 // hero's view is sent to the brain server (python -m paradise.live serve),
-// whose reply drives the meadow's light, the constellation, the readout, and
+// whose reply drives the meadow's light, the brain panels, and
 // the hero's own steering.
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -154,7 +154,8 @@ function updateCamera(dt, t) {
 }
 
 // ---------------------------------------------------------------- brain link
-let ws, awaiting = false, meta = null, lastSent = 0, glow = 2;
+let ws, awaiting = false, meta = null, lastSent = 0, glow = 2, pleasure = 0;
+const FEELINGS = [[6, "bliss"], [3, "pleased"], [1, "content"], [-1, "indifferent"], [-3, "uneasy"], [-Infinity, "afraid"]];
 function connect() {
   const url = BRAINS[brainTry % BRAINS.length];
   let opened = false;
@@ -263,11 +264,16 @@ function tick(now) {
   composer.render();
   constellation.render(t, dt);
   // The animal mind, as instruments.
+  // Pleasure: the brain's valence (good minus bad populations), shown as one
+  // meter from aversion to pleasure and a word for it.
   if (meta) {
-    const sgn = (v) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
-    const act = meta.valence >= 0 ? "approach" : "withdraw";
-    const line = `reward ${sgn(meta.reward)}σ   satiety ${sgn(meta.satiety)}σ   escape ${sgn(meta.escape)}σ`;
-    $("readout").innerHTML = `valence  <b>${sgn(meta.valence)}σ</b>   ${act}\n${line}\narousal ${sgn(meta.arousal)}σ`;
+    pleasure += (meta.valence - pleasure) * (1 - Math.exp(-dt * 3));
+    const p = Math.max(-1, Math.min(1, pleasure / 8));
+    const fill = $("pFill").style;
+    fill.left = `${50 + Math.min(0, p) * 50}%`;
+    fill.width = `${Math.abs(p) * 50}%`;
+    fill.background = p >= 0 ? "#e9c46a" : "#829bd7";
+    $("pWord").textContent = FEELINGS.find(([v]) => pleasure >= v)[1];
   }
   raster.update(dt, latestZ);
   traces.update(dt, latestLevels);

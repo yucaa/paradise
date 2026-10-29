@@ -44,7 +44,7 @@ const sun = new THREE.DirectionalLight(0xffdcaa, 2.4);
 sun.position.set(sunB.x, sunB.z, -sunB.y).multiplyScalar(50);
 scene.add(sun, new THREE.HemisphereLight(0xfff4e0, 0x8a7a60, 1.1));
 
-const flight = new Flight(world, spots);
+const flight = new Flight(world, spots, groundHeight);
 const wind = new Wind(uniforms);
 const eye = new Eye(renderer);
 const constData = await fetch("data/constellation.json").then((r) => r.json());

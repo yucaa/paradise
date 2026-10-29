@@ -1,6 +1,6 @@
 // Geometry made in the browser on top of the exported meadow: a gentle terrain
 // warp (so pools take irregular, lobed shapes), rocks along every shoreline,
-// and stylized trees. All of it is b-space (Blender Z-up) and carries the same
+// lily pads on the water, and stylized trees. All of it is b-space (Blender Z-up) and carries the same
 // attributes as the exported parts (root, tip, card), so it is coloured by
 // heaven like everything else.
 import * as THREE from "three";
@@ -100,6 +100,48 @@ export function shoreRocks(groundHeight, level, radius = 40) {
     }
   }
   return { geometry: geometry(out.tris, out.roots, out.tips), count: kept.length };
+}
+
+// --- lily pads ----------------------------------------------------------------------
+
+// Colonies of floating pads in the calm shallows, away from the stones at the
+// shore: round leaves with the lily's notch, packed without overlapping.
+// root = the pad's centre (it turns and bobs about it), tip = distance from the
+// centre (0..1), card = (that distance, angle / 2pi) for the veins.
+export function lilyPads(groundHeight, level, radius = 40) {
+  const rand = rng(29);
+  const pads = [];
+  for (let x = -radius; x < radius; x += 0.3) {
+    for (let y = -radius; y < radius; y += 0.3) {
+      const px = x + (rand() - 0.5) * 0.3, py = y + (rand() - 0.5) * 0.3;
+      const depth = level - groundHeight(px, py);
+      if (depth < 0.1 || depth > 0.6 || px * px + py * py > radius * radius) continue;
+      if (vnoise2(px * 0.3 + 3.1, py * 0.3 - 7.4) < 0.5 || rand() < 0.35) continue;   // in colonies
+      const r = 0.1 + rand() ** 1.5 * 0.24;
+      if (pads.every((q) => Math.hypot(q.x - px, q.y - py) > (q.r + r) * 1.05)) pads.push({ x: px, y: py, r });
+    }
+  }
+  const tris = [], roots = [], tips = [], cards = [];
+  const K = 20;
+  for (const { x, y, r } of pads) {
+    const notch = rand() * 6.283, gap = 0.22 + rand() * 0.12;
+    const z = level + 0.006;
+    const at = (k) => {
+      const a = notch + gap + (k / K) * (6.283 - 2 * gap);
+      const rr = r * (1 + (vnoise2(x * 9 + k * 0.7, y * 9) - 0.5) * 0.08);
+      return [x + Math.cos(a) * rr, y + Math.sin(a) * rr, z + 0.004, (a - notch) / 6.283];
+    };
+    for (let k = 0; k < K; k++) {
+      const a = at(k), b = at(k + 1);
+      tris.push(x, y, z, ...a.slice(0, 3), ...b.slice(0, 3));
+      for (let i = 0; i < 3; i++) roots.push(x, y, level);
+      tips.push(0, 1, 1);
+      cards.push(0, (a[3] + b[3]) / 2, 1, a[3], 1, b[3]);
+    }
+  }
+  const g = geometry(tris, roots, tips);
+  g.setAttribute("card", new THREE.BufferAttribute(new Float32Array(cards), 2));
+  return { geometry: g, count: pads.length };
 }
 
 // --- trees grown like neurons ------------------------------------------------------

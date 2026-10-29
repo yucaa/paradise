@@ -8,12 +8,12 @@
 // uFlyView = 1 every surface instead shows the raw panorama at the shading
 // point, unlit: what the hero's brain is shown.
 import * as THREE from "three";
-import { terrainWarp, shoreRocks, neuronTrees } from "./shapes.js";
+import { terrainWarp, shoreRocks, lilyPads, neuronTrees } from "./shapes.js";
 import { WIND_GLSL, MAX_PUFFS } from "./wind.js";
 
 export const EYE = new THREE.Vector3(0, 0, 1.2);   // b-space
 
-const KIND = { ground: 0, grass: 1, flower: 2, leaf: 3, fruit: 4, mote: 5, rock: 6, canopy: 7, branch: 8, foliage: 9 };
+const KIND = { ground: 0, grass: 1, flower: 2, leaf: 3, fruit: 4, mote: 5, rock: 6, canopy: 7, branch: 8, foliage: 9, pad: 10 };
 
 // Matches eden.py: sun rotation (80°, 0°, 165°) applied to Blender's -Z.
 function sunDirection() {
@@ -60,7 +60,7 @@ function heavenMaterial(kind, uniforms) {
         // back past rest at its own natural frequency, in waves that travel
         // with the gust; a smaller wobble runs crosswise. Motion grows toward
         // the free end of each thing.
-        #if KIND == 1 || KIND == 2 || KIND == 5 || KIND == 8 || KIND == 9
+        #if KIND == 1 || KIND == 2 || KIND == 5 || KIND == 8 || KIND == 9 || KIND == 10
           vec2 w = windAt(root.xy);
           float lw = length(w);
           vec2 wd = w / max(lw, 1e-4), side = vec2(-wd.y, wd.x);
@@ -90,6 +90,16 @@ function heavenMaterial(kind, uniforms) {
           // Pollen rides the air, looping in the eddies.
           p.xy += w * 1.1 + vec2(sin(uTime * 0.7 + h * 9.0), cos(uTime * 0.6 + h * 7.0)) * 0.3;
           p.z += sin(uTime * 0.9 + h * 11.0) * 0.15 + lw * 0.1;
+        #elif KIND == 10
+          // Floating: each pad turns slowly about its stem, nudged and bobbed
+          // by the gusts, and tilts a little on the swell.
+          float turn = 0.25 * sin(uTime * (0.11 + 0.08 * h) + h * 6.283) + 0.35 * lw * sin(uTime * 0.6 + h * 9.0);
+          vec2 rel = p.xy - root.xy;
+          float c = cos(turn), s = sin(turn);
+          p.xy = root.xy + vec2(c * rel.x - s * rel.y, s * rel.x + c * rel.y) + w * 0.05;
+          vec2 tilt = vec2(sin(uTime * 0.9 + h * 7.0), cos(uTime * 0.8 + h * 5.0)) * (0.015 + 0.03 * lw);
+          p.z += 0.003 * sin(uTime * 1.1 + h * 13.0) + dot(rel, tilt);
+          p.z = max(p.z, ${WATER_LEVEL.toFixed(2)} + 0.002);
         #endif
         #if KIND == 9
           // Foliage billboards face the camera; tip holds the card size.
@@ -165,6 +175,19 @@ function heavenMaterial(kind, uniforms) {
           float back = pow(max(dot(V, -uSun), 0.0), 2.0);
           float rim = pow(1.0 - max(dot(n, V), 0.0), 2.0);
           vec3 col = albedo * (0.42 + lit * sunCol * 0.55) + albedo * back * sunCol * 0.7 + albedo * rim * 0.35;
+        #elif KIND == 10
+          // Lily pad: heaven's colour deepened, veins fanning from the stem, a
+          // paler rim, and a waxy sheen of sky.
+          n = vec3(0.0, 0.0, 1.0);
+          albedo = mix(albedo, albedo * albedo * 1.6, 0.5) * 0.85;
+          float vein = 1.0 - smoothstep(0.0, 0.08, abs(fract(vCard.y * 15.0) - 0.5) - 0.42);
+          albedo *= 1.0 - 0.18 * vein * smoothstep(0.1, 0.4, vCard.x);
+          albedo *= 0.8 + 0.3 * smoothstep(0.5, 1.0, vCard.x);
+          float diff = max(dot(n, uSun), 0.0);
+          vec3 col = albedo * (0.5 + diff * sunCol * 0.5);
+          float fres = pow(1.0 - max(dot(n, V), 0.0), 4.0);
+          col = mix(col, vec3(1.0, 0.95, 0.88) * 0.8, fres * 0.35);
+          col += vec3(1.0, 0.9, 0.75) * pow(max(dot(reflect(-uSun, n), V), 0.0), 24.0) * 0.12;
         #elif KIND == 0 || KIND == 4
           float diff = max(dot(n, uSun), 0.0);
           vec3 col = albedo * (0.5 + diff * sunCol * 0.5);
@@ -188,6 +211,8 @@ function heavenMaterial(kind, uniforms) {
           float where = vTip * vTip * vTip;
         #elif KIND == 7
           float where = 0.25 + pow(1.0 - abs(dot(n, V)), 2.0);
+        #elif KIND == 10
+          float where = 0.4 * vTip;
         #elif KIND == 9
           float where = 0.3 + pow(1.0 - max(dot(n, V), 0.0), 2.0);
         #else
@@ -534,6 +559,8 @@ export async function loadMeadow(scene) {
     for (const g of groups) { const c = g.sum.divideScalar(g.n); fruits.push(new THREE.Vector3(c.x, c.y, g.top)); }
   });
   world.add(new THREE.Mesh(rocks.geometry, heavenMaterial("rock", uniforms)));
+  const pads = lilyPads(groundHeight, WATER_LEVEL);
+  world.add(new THREE.Mesh(pads.geometry, heavenMaterial("pad", uniforms)));
   // Trees grown like neurons replace the exported trunks and leaf cards.
   world.children.filter((m) => m.material?.defines?.KIND === KIND.leaf || m.name === "trunks")
     .forEach((m) => world.remove(m));
@@ -542,7 +569,7 @@ export async function loadMeadow(scene) {
   const foliage = new THREE.Mesh(trees.foliage, heavenMaterial("foliage", uniforms));
   foliage.frustumCulled = false;
   world.add(foliage);
-  console.log(`meadow: ${rocks.count} shore stones, ${trees.trees} trees, ${fruits.length} fruit, ${trees.perches.length} perches`);
+  console.log(`meadow: ${rocks.count} shore stones, ${pads.count} lily pads, ${trees.trees} trees, ${fruits.length} fruit, ${trees.perches.length} perches`);
 
   const heightTex = new THREE.DataTexture(Float32Array.from({ length: groundPos.length / 3 }, (_, i) => groundPos[i * 3 + 2]),
     220, 220, THREE.RedFormat, THREE.FloatType);

@@ -11,7 +11,7 @@
 // down to the nearest fruit and feeds; fed, it flies up into a tree and rests
 // on a twig, wings folded, swaying with the branch, before wandering again.
 import * as THREE from "three";
-import { EYE } from "./meadow.js";
+import { EYE, WATER_LEVEL } from "./meadow.js";
 
 export const CUBE = 0.6;
 export const FLY_SCALE = 0.12;
@@ -71,9 +71,10 @@ const EAT_S = 12;
 const REST_S = 18;
 
 export class Flight {
-  constructor(world, spots) {
+  constructor(world, spots, groundHeight) {
     this.world = world;
     this.spots = spots;
+    this.floor = (x, y) => Math.max(groundHeight(x, y), WATER_LEVEL);   // ground, or the pond's surface
     this.state = "wander";       // wander | toEat | eat | toRest | rest
     this.stateT = 0;
     this.hunger = 0.4;
@@ -139,8 +140,11 @@ export class Flight {
     this.yaw += Math.atan2(Math.sin(this.targetYaw - this.yaw), Math.cos(this.targetYaw - this.yaw)) * (1 - Math.exp(-dt * 3));
     const d = to.length();
     const speed = Math.min(1.2, 0.15 + d * 0.6);
-    // Cruise above the grass, then drop onto the target at the end.
-    const cruise = Math.max(target.z + Math.min(1.2, flat * 0.35), 0.9);
+    // Cruise above the grass (and the rise of the ground ahead), then drop
+    // onto the target at the end.
+    const ahead = p.clone().addScaledVector(this.forward(), Math.min(flat, 1.5));
+    const g = Math.max(this.floor(p.x, p.y), this.floor(ahead.x, ahead.y));
+    const cruise = Math.max(target.z + Math.min(1.2, flat * 0.35), g + 0.9);
     const wantZ = flat < 0.6 ? target.z : cruise;
     p.addScaledVector(this.forward(), Math.min(flat, speed * dt));
     p.z += (wantZ - p.z) * (1 - Math.exp(-dt * (flat < 0.6 ? 3 : 1.2)));
@@ -199,7 +203,8 @@ export class Flight {
       // Stay within the meadow and above the grass.
       const home = Math.hypot(p.x, p.y);
       if (home > 12) this.targetYaw = Math.atan2(p.x, -p.y) + (Math.random() - 0.5) * 0.3;
-      const dz = (p.z < 0.7 ? 0.4 : p.z > 2.6 ? -0.4 : 0) + this.climb;
+      const above = p.z - this.floor(p.x, p.y);
+      const dz = (above < 0.7 ? 0.4 : above > 2.6 ? -0.4 : 0) + this.climb;
       this.yaw += Math.atan2(Math.sin(this.targetYaw - this.yaw), Math.cos(this.targetYaw - this.yaw)) * (1 - Math.exp(-dt * 2.5));
       p.addScaledVector(this.forward(), speed * dt);
       p.z += dz * speed * dt;
@@ -211,6 +216,8 @@ export class Flight {
       this.climb *= Math.exp(-dt * 0.8);
     }
     const settled = this.mode === "seek" && (this.state === "eat" || this.state === "rest");
+    // Never through the ground: the cube's underside stays above it.
+    if (!settled) p.z = Math.max(p.z, this.floor(p.x, p.y) + 0.12);
     this.folded += ((settled ? 1 : 0) - this.folded) * (1 - Math.exp(-dt * 4));
     this.hero.group.position.copy(p);
     this.hero.group.rotation.set(...bank(this.drift, this.yaw).map((a) => a * (1 - this.folded)), this.yaw);
@@ -230,6 +237,8 @@ export class Flight {
       f.offset.y += (f.drift.y * 1.2 - f.offset.y) * (1 - Math.exp(-dt * 0.9));
       f.offset.z = Math.sin(t * 1.9 + f.seed) * f.drift.length() * 0.15;
       f.group.position.add(f.offset);
+      const fp = f.group.position;
+      fp.z = Math.max(fp.z, this.floor(fp.x, fp.y) + 0.3);
       const v = new THREE.Vector3(Math.cos(s * 1.3 + f.seed) * 1.3, -Math.sin(s * 1.1 + f.seed * 0.7) * 1.1, 0);
       const yaw = Math.atan2(-v.x, v.y);
       f.group.rotation.set(...bank(f.drift, yaw), yaw);

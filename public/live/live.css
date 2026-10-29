@@ -43,6 +43,8 @@
   color: rgba(255, 255, 255, 0.4); margin-bottom: 8px; }
 .mind-right .mono-label:not(:first-child) { margin-top: 18px; }
 #raster { flex: 1; width: 100%; min-height: 0; }
+.map-label { margin-top: 18px; }
+#map { height: 32vh; width: 100%; flex: none; }
 .mind-right .viz { height: 34vh; position: relative; cursor: grab; }
 .mind-right .viz canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
 #traces { flex: 1; width: 100%; min-height: 0; }

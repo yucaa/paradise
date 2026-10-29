@@ -14,6 +14,7 @@ import { Eye } from "./eye.js";
 import { Constellation } from "./constellation.js";
 import { Wind } from "./wind.js";
 import { Raster, Traces, drawArch } from "./mind.js";
+import { Minimap } from "./map.js";
 import { Director } from "./camera.js";
 
 // The brain server (python -m paradise.live serve). Where it is: ?brain=wss://...,
@@ -52,6 +53,7 @@ const constellation = new Constellation($("cons"), constData);
 const judge = Int8Array.from(atob(constData.judge), (c) => (c.charCodeAt(0) << 24) >> 24);
 const raster = new Raster($("raster"), judge, constData.judge_names);
 const traces = new Traces($("traces"));
+const minimap = new Minimap($("map"), { groundHeight, waterLevel: WATER_LEVEL, crowns: spots.crowns, fruits: spots.fruits });
 let latestZ = null, latestLevels = null;
 
 // Heaven through an arched window; the fly's mind in the margins either side.
@@ -277,6 +279,8 @@ function tick(now) {
   }
   raster.update(dt, latestZ);
   traces.update(dt, latestLevels);
+  const fwd = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 2).negate();
+  minimap.update(dt, flight, Math.atan2(-fwd.z, fwd.x));      // b-space forward = (x, -z)
   const DOING = { wander: "wandering", toEat: "going to feed", eat: "feeding", toRest: "going to rest", rest: "resting" };
   $("day").textContent = `Day ${ROMAN[Math.floor(t / 60) % 7]} · ${flight.mode === "guide" ? "guided" : DOING[flight.state]}`;
   requestAnimationFrame(tick);

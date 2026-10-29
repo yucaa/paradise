@@ -583,7 +583,7 @@ export async function loadMeadow(scene) {
   world.add(water);
   world.updateMatrixWorld();
   const mirror = new Mirror(water, uniforms);
-  return { world, uniforms, activity, groundHeight, mirror, spots: { fruits, perches: trees.perches } };
+  return { world, uniforms, activity, groundHeight, mirror, spots: { fruits, perches: trees.perches, crowns: trees.crowns } };
 }
 
 // Painterly post: a four-sector Kuwahara filter (oil-paint brushwork).

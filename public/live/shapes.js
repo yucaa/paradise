@@ -208,6 +208,7 @@ export function neuronTrees(trunkPos, ringsPerTree = 10, segs = 9) {
   const branch = { tris: [], roots: [], tips: [] };
   const leaf = { pos: [], normal: [], root: [], tip: [], card: [] };
   const perches = [];   // twig ends in the outer crown, where a fly can rest
+  const crowns = [];    // { base, crown, radii } per tree, for the map
   const ringCentre = (t, ring) => {
     const c = new THREE.Vector3();
     for (let s = 0; s < segs; s++) {
@@ -223,6 +224,7 @@ export function neuronTrees(trunkPos, ringsPerTree = 10, segs = 9) {
     const h = top.z - base.z;
     const crown = new THREE.Vector3(top.x, top.y, base.z + h * (0.72 + rand() * 0.12));
     const radii = new THREE.Vector3(2.4 + rand() * 1.6, 2.4 + rand() * 1.6, 2.0 + rand() * 1.4);
+    crowns.push({ base, crown, radii });
     const { nodes, r, depth, children } = colonize(base, crown, radii, rand);
     const maxDepth = Math.max(...depth);
     // Tapered tubes, one per segment.
@@ -270,5 +272,5 @@ export function neuronTrees(trunkPos, ringsPerTree = 10, segs = 9) {
   lg.setAttribute("root", new THREE.BufferAttribute(new Float32Array(leaf.root), 3));
   lg.setAttribute("tip", new THREE.BufferAttribute(new Float32Array(leaf.tip), 1));
   lg.setAttribute("card", new THREE.BufferAttribute(new Float32Array(leaf.card), 2));
-  return { branches: geometry(branch.tris, branch.roots, branch.tips), foliage: lg, trees, perches };
+  return { branches: geometry(branch.tris, branch.roots, branch.tips), foliage: lg, trees, perches, crowns };
 }

@@ -189,11 +189,13 @@ export class Traces {
 }
 
 // The arched window onto heaven: a dark field with a round-headed arch cut
-// out of it, drawn into an SVG overlay.
-export function drawArch(svg) {
+// out of it, drawn into an SVG overlay. On a phone it spans the width and
+// stops above the panels.
+export function drawArch(svg, phone = false) {
   const W = innerWidth, H = innerHeight;
-  const aw = Math.min(W * 0.48, H * 0.86), r = aw / 2;
-  const x0 = (W - aw) / 2, x1 = x0 + aw, top = H * 0.06, bottom = H * 0.9;
+  const aw = phone ? W - 32 : Math.min(W * 0.48, H * 0.86), r = aw / 2;
+  const x0 = (W - aw) / 2, x1 = x0 + aw, top = phone ? 58 : H * 0.06;
+  const bottom = phone ? Math.max(top + r + 40, H * 0.56) : H * 0.9;
   const spring = top + r;
   const arch = `M ${x0} ${bottom} L ${x0} ${spring} A ${r} ${r} 0 0 1 ${x1} ${spring} L ${x1} ${bottom} Z`;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);

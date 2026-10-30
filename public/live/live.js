@@ -56,11 +56,26 @@ const traces = new Traces($("traces"));
 const minimap = new Minimap($("map"), { groundHeight, waterLevel: WATER_LEVEL, crowns: spots.crowns, fruits: spots.fruits });
 let latestZ = null, latestLevels = null;
 
-// Heaven through an arched window; the fly's mind in the margins either side.
+// Heaven through an arched window; the fly's mind in the margins either side,
+// or, on a phone, in a deck of panels beneath it (pleasure kept in view above).
+const phone = matchMedia("(max-aspect-ratio: 1/1)");
+const panels = [...document.querySelectorAll(".panel")].map((el) => [el, el.parentNode]);
 function frame() {
-  const { x0 } = drawArch($("arch"));
+  for (const [el, home] of panels) {
+    const dest = !phone.matches ? home : el.classList.contains("p-pleasure") ? $("pTop") : $("deck");
+    dest.appendChild(el);
+  }
+  $("dots").innerHTML = "<i></i>".repeat($("deck").children.length);
+  dots();
+  const { x0, bottom } = drawArch($("arch"), phone.matches);
   document.documentElement.style.setProperty("--mw", `${x0}px`);
+  document.documentElement.style.setProperty("--ab", `${bottom}px`);
 }
+function dots() {
+  const deck = $("deck"), at = Math.round(deck.scrollLeft / Math.max(1, deck.clientWidth - 16));
+  [...$("dots").children].forEach((d, i) => d.classList.toggle("on", i === at));
+}
+$("deck").addEventListener("scroll", dots, { passive: true });
 addEventListener("resize", frame);
 frame();
 const N = constellation.n;
@@ -129,6 +144,7 @@ view.addEventListener("pointermove", (e) => {
   manualUntil = performance.now() + 8000;
 });
 view.addEventListener("pointerup", () => (drag = null));
+view.addEventListener("pointercancel", () => (drag = null));
 view.addEventListener("wheel", (e) => {
   director.zoom = Math.max(0.4, Math.min(4, director.zoom * (1 + e.deltaY * 0.001)));
   e.preventDefault();

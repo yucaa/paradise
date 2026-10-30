@@ -30,30 +30,43 @@
       <div class="sp">Drosophila melanogaster</div>
       <div>FlyWire 783 · adult female brain</div>
       <div>139,255 neurons · 15,091,983 synapses</div>    </div>
-    <div class="mono-label">Pleasure &amp; aversion neurons</div>
-    <canvas id="raster"></canvas>
-    <div class="mono-label map-label">Map</div>
-    <canvas id="map"></canvas>
+    <section class="panel p-neurons">
+      <div class="mono-label">Pleasure &amp; aversion neurons</div>
+      <canvas id="raster"></canvas>
+    </section>
+    <section class="panel p-map">
+      <div class="mono-label">Map</div>
+      <canvas id="map"></canvas>
+    </section>
   </aside>
 
   <aside class="mind mind-right hud">
-    <div class="mono-label">Brain regions</div>
-    <div class="viz" id="cons"></div>
-    <div class="mono-label">Region activity</div>
-    <canvas id="traces"></canvas>
-    <div class="mono-label">Pleasure</div>
-    <div class="pleasure">
-      <div class="p-word" id="pWord">—</div>
-      <div class="p-meter"><i></i><b id="pFill"></b></div>
-      <div class="p-scale"><span>aversion</span><span>pleasure</span></div>
-    </div>
+    <section class="panel p-regions">
+      <div class="mono-label">Brain regions</div>
+      <div class="viz" id="cons"></div>
+    </section>
+    <section class="panel p-traces">
+      <div class="mono-label">Region activity</div>
+      <canvas id="traces"></canvas>
+    </section>
+    <section class="panel p-pleasure">
+      <div class="mono-label">Pleasure</div>
+      <div class="pleasure">
+        <div class="p-word" id="pWord">—</div>
+        <div class="p-meter"><i></i><b id="pFill"></b></div>
+        <div class="p-scale"><span>aversion</span><span>pleasure</span></div>
+      </div>
+    </section>
   </aside>
+
+  <!-- On a phone the panels leave the margins for a deck beneath the window. -->
+  <div id="phone" class="hud"><div id="pTop"></div><div id="deck"></div><div id="dots"></div></div>
 
   <footer class="status hud">
     <span id="day">Day I</span>
     <span class="spacer"></span>
   </footer>
-  <div id="loading">Planting the garden…</div>
+  <div id="loading">Loading</div>
 </main>
 <script type="module" src="live.js"></script>
 </body>

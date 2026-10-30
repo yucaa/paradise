@@ -33,7 +33,7 @@ export class Constellation {
     this.el = el;
     this.n = data.n;
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    this.renderer.setPixelRatio(devicePixelRatio);
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     el.appendChild(this.renderer.domElement);
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(30, 1, 0.1, 20);
@@ -48,7 +48,7 @@ export class Constellation {
     this.tex.needsUpdate = true;
     this.regions = data.regions;
     this.uniforms = {
-      uAct: { value: this.tex }, uTime: { value: 0 }, uPR: { value: devicePixelRatio }, uTexW: { value: TEX_W },
+      uAct: { value: this.tex }, uTime: { value: 0 }, uPR: { value: Math.min(devicePixelRatio, 2) }, uTexW: { value: TEX_W },
       uMode: { value: 0 },                                   // eased: 0 = neurons, 1 = regions
       uRegionColor: { value: Array.from({ length: 16 }, (_, i) =>
         new THREE.Color(REGION_STYLE[this.regions[i]]?.[0] ?? "#888888")) },
@@ -189,6 +189,7 @@ export class Constellation {
       this.pitch = Math.max(-1.3, Math.min(1.3, drag[3] + (e.clientY - drag[1]) * 0.008));
     });
     el.addEventListener("pointerup", () => (drag = null));
+    el.addEventListener("pointercancel", () => (drag = null));
     el.addEventListener("wheel", (e) => { this.dist = Math.max(1.0, Math.min(5, this.dist * (1 + e.deltaY * 0.001))); e.preventDefault(); }, { passive: false });
     this.dragging = () => !!drag;
   }

@@ -2,11 +2,11 @@
 // to heaven. A spike raster of the neurons that judge, region traces like an
 // EEG, and a specimen tag. Everything here is plain measurement.
 
-// Each population with its name and, beneath it, what its firing says.
+// Each population with its name and, beneath it, the feeling it stands for.
 const POPS = [
-  ["reward", "Reward", "this is good", +1], ["approach", "Approach", "go toward it", +1],
-  ["satiety", "Satiety", "had enough", +1], ["punishment", "Punishment", "this is bad", -1],
-  ["avoidance", "Avoidance", "keep away", -1], ["escape", "Escape", "flee, now", -1],
+  ["reward", "Reward", "pleasure", +1], ["approach", "Approach", "attraction", +1],
+  ["satiety", "Satiety", "fullness", +1], ["punishment", "Punishment", "pain", -1],
+  ["avoidance", "Avoidance", "aversion", -1], ["escape", "Escape", "fear", -1],
 ];
 
 // Spike raster: one row per neuron, a tick each time it fires, grouped by

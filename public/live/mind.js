@@ -2,9 +2,11 @@
 // to heaven. A spike raster of the neurons that judge, region traces like an
 // EEG, and a specimen tag. Everything here is plain measurement.
 
+// Each population with its name and, beneath it, what its firing says.
 const POPS = [
-  ["reward", "reward", +1], ["approach", "approach", +1], ["satiety", "satiety", +1],
-  ["punishment", "punish", -1], ["avoidance", "avoid", -1], ["escape", "escape", -1],
+  ["reward", "Reward", "this is good", +1], ["approach", "Approach", "go toward it", +1],
+  ["satiety", "Satiety", "had enough", +1], ["punishment", "Punishment", "this is bad", -1],
+  ["avoidance", "Avoidance", "keep away", -1], ["escape", "Escape", "flee, now", -1],
 ];
 
 // Spike raster: one row per neuron, a tick each time it fires, grouped by
@@ -27,14 +29,14 @@ export class Raster {
     this.labels = labels;
     this.rows = [];         // { idx, sign, mean }
     this.groups = [];
-    for (const [key, short, sign] of POPS) {
+    for (const [key, short, gloss, sign] of POPS) {
       const p = judgeNames.indexOf(key);
       const members = [];
       judge.forEach((j, i) => j === p && members.push(i));
       const step = Math.max(1, members.length / maxRowsPerPop);
       const start = this.rows.length;
       for (let k = 0; k < members.length; k += step) this.rows.push({ idx: members[Math.floor(k)], sign, mean: null });
-      this.groups.push({ short, sign, start, end: this.rows.length, n: members.length, lastY: null });
+      this.groups.push({ short, gloss, sign, start, end: this.rows.length, n: members.length, lastY: null });
     }
     this.carry = 0;
   }
@@ -62,7 +64,7 @@ export class Raster {
   update(dt, z) {
     const [w, h, dpr] = this.resize();
     const ctx = this.ctx;
-    const gutter = this.labels ? 70 * dpr : 0;
+    const gutter = this.labels ? 80 * dpr : 0;
     const rowH = this.layout(h, dpr);
     // Adaptation runs every frame, whether or not the raster scrolls.
     const k = 1 - Math.exp(-dt / 2);
@@ -120,8 +122,8 @@ export class Raster {
         const mid = (g.y0 + g.y1) / 2;
         ctx.fillStyle = g.sign > 0 ? "rgba(238,234,224,0.75)" : "rgba(155,175,212,0.8)";
         ctx.fillText(g.short, 0, mid - 6 * dpr);
-        ctx.fillStyle = "rgba(255,255,255,0.32)";
-        ctx.fillText(`${g.end - g.start}/${g.n}`, 0, mid + 6 * dpr);
+        ctx.fillStyle = "rgba(255,255,255,0.36)";
+        ctx.fillText(g.gloss, 0, mid + 6 * dpr);
       }
     }
   }
